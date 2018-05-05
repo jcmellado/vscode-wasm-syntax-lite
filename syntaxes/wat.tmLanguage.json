@@ -1,0 +1,233 @@
+{
+  "name": "WebAssembly",
+  "scopeName": "source.wat",
+  "patterns": [
+    {
+      "include": "#whitespace"
+    },
+    {
+      "include": "#s-expression"
+    },
+    {
+      "include": "#invalid"
+    }
+  ],
+  "repository": {
+    "whitespace": {
+      "patterns": [
+        {
+          "match": "[ \\n\\r\\t]+"
+        },
+        {
+          "include": "#comment-line"
+        },
+        {
+          "include": "#comment-block"
+        }
+      ]
+    },
+    "comment-line": {
+      "patterns": [
+        {
+          "name": "comment.line.double-semicolon.wat",
+          "begin": ";;",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.wat"
+            }
+          },
+          "end": "$",
+          "patterns": [
+            {
+              "match": "(?:(?<=[ \\n\\r\\t])|\\G(?<=;;))(TODO|FIXME)(?=[ \\n\\r\\t])",
+              "captures": {
+                "1": {
+                  "name": "markup.bold.comment.${1:/downcase}.wat"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "comment-block": {
+      "patterns": [
+        {
+          "name": "comment.block.wat",
+          "begin": "\\(;",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.wat"
+            }
+          },
+          "end": ";\\)",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.wat"
+            }
+          },
+          "patterns": [
+            {
+              "match": "(?<=[ \\n\\r\\t]|\\(;|;\\)|^)(TODO|FIXME)(?=[ \\n\\r\\t]|;\\)|\\(;)",
+              "captures": {
+                "1": {
+                  "name": "markup.bold.comment.${1:/downcase}.wat"
+                }
+              }
+            },
+            {
+              "include": "#comment-block"
+            }
+          ]
+        }
+      ]
+    },
+    "s-expression": {
+      "patterns": [
+        {
+          "name": "meta.s-expression.wat",
+          "begin": "(\\()(?!;)",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.section.s-expression.begin.wat"
+            }
+          },
+          "end": "(?<!;)(\\))",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.section.s-expression.end.wat"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#whitespace"
+            },
+            {
+              "include": "#token"
+            },
+            {
+              "include": "#s-expression"
+            },
+            {
+              "include": "#invalid"
+            }
+          ]
+        }
+      ]
+    },
+    "token": {
+      "patterns": [
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#id"
+        },
+        {
+          "include": "#keyword"
+        },
+        {
+          "include": "#instr"
+        }
+      ]
+    },
+    "number": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.wat",
+          "match": "(?<=[ \\t()]|^|offset=|align=)([+-]?(nan:)?0x[0-9A-Fa-f]+(_[0-9A-Fa-f]+)*(\\.([0-9A-Fa-f]+(_[0-9A-Fa-f]+)*)?)?([Pp][+-]?([0-9]+(_[0-9]+)*))?)(?=[ \\t()]|;;|$)"
+        },
+        {
+          "name": "constant.numeric.wat",
+          "match": "(?<=[ \\t()]|^|offset=|align=)([+-]?([0-9]+(_[0-9]+)*)(\\.([0-9]+(_[0-9]+)*)?)?([Ee][+-]?([0-9]+(_[0-9]+)*))?)(?=[ \\t()]|;;|$)"
+        },
+        {
+          "name": "constant.language.wat",
+          "match": "(?<=[ \\t()]|^)([+-]?(inf|nan))(?=[ \\t()]|;;|$)"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.wat",
+      "match": "(?<=[ \\t()]|^)((\")([^\\\\\"]*(?:\\\\.[^\\\\\"]*)*)(\"))(?=[ \\t()]|;;|$)",
+      "captures": {
+        "2": {
+          "name": "punctuation.definition.string.begin.wat"
+        },
+        "3": {
+          "patterns": [
+            {
+              "include": "#escape-sequence"
+            }
+          ]
+        },
+        "4": {
+          "name": "punctuation.definition.string.end.wat"
+        }
+      }
+    },
+    "escape-sequence": {
+      "patterns": [
+        {
+          "name": "constant.character.escape.wat",
+          "match": "\\\\([tnr\"'\\\\]|u\\{[0-9A-Fa-f]+(_[0-9A-Fa-f]+)\\}|[0-9A-Fa-f]{2})"
+        },
+        {
+          "name": "invalid.illegal.wat",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "id": {
+      "name": "variable.other.wat",
+      "match": "(?<=[ \\t()]|^)(\\$[0-9A-Za-z!#$%&'*+-./:<=>?@\\\\^_`|~]+)(?=[ \\t()]|;;|$)"
+    },
+    "keyword": {
+      "patterns": [
+        {
+          "name": "storage.type.$1.wat",
+          "match": "(?<=[ \\t()]|^)(i32|i64|f32|f64)(?=[ \\t()]|;;|$)"
+        },
+        {
+          "name": "storage.type.$1.wat",
+          "match": "(?<=[ \\t()]|^)(module)(?=[ \\t()]|;;|$)"
+        },
+        {
+          "name": "keyword.other.$1.wat",
+          "match": "(?<=[ \\t()]|^)(type|func|table|memory|global|elem|data|anyfunc|offset|mut|param|result|local)(?=[ \\t()]|;;|$)"
+        },
+        {
+          "name": "keyword.control.$1.wat",
+          "match": "(?<=[ \\t()]|^)(import|export|start)(?=[ \\t()]|;;|$)"
+        },
+        {
+          "name": "keyword.other.$1.wat",
+          "match": "(?<=[ \\t()]|^)(offset=|align=)(?=(0x[0-9A-Fa-f]+(_[0-9A-Fa-f]+)*)|([0-9]+(_[0-9]+)*)|([ \\t()]|;;|$))"
+        }
+      ]
+    },
+    "instr": {
+      "patterns": [
+        {
+          "name": "keyword.other.$1.wat",
+          "match": "(?<=[ \\t()]|^)(drop|select|get_local|set_local|tee_local|get_global|set_global|i32.load|i64.load|f32.load|f64.load|i32.load8_s|i32.load8_u|i32.load16_s|i32.load16_u|i64.load8_s|i64.load8_u|i64.load16_s|i64.load16_u|i64.load32_s|i64.load32_u|i32.store|i64.store|f32.store|f64.store|i32.store8|i32.store16|i64.store8|i64.store16|i64.store32|memory.size|memory.grow|i32.const|i64.const|f32.const|f64.const|i32.clz|i32.ctz|i32.popcnt|i32.add|i32.sub|i32.mul|i32.div_s|i32.div_u|i32.rem_s|i32.rem_u|i32.and|i32.or|i32.xor|i32.shl|i32.shr_s|i32.shr_u|i32.rotl|i32.rotr|i64.clz|i64.ctz|i64.popcnt|i64.add|i64.sub|i64.mul|i64.div_s|i64.div_u|i64.rem_s|i64.rem_u|i64.and|i64.or|i64.xor|i64.shl|i64.shr_s|i64.shr_u|i64.rotl|i64.rotr|f32.abs|f32.neg|f32.ceil|f32.floor|f32.trunc|f32.nearest|f32.sqrt|f32.add|f32.sub|f32.mul|f32.div|f32.min|f32.max|f32.copysign|f64.abs|f64.neg|f64.ceil|f64.floor|f64.trunc|f64.nearest|f64.sqrt|f64.add|f64.sub|f64.mul|f64.div|f64.min|f64.max|f64.copysign|i32.eqz|i32.eq|i32.ne|i32.lt_s|i32.lt_u|i32.gt_s|i32.gt_u|i32.le_s|i32.le_u|i32.ge_s|i32.ge_u|i64.eqz|i64.eq|i64.ne|i64.lt_s|i64.lt_u|i64.gt_s|i64.gt_u|i64.le_s|i64.le_u|i64.ge_s|i64.ge_u|f32.eq|f32.ne|f32.lt|f32.gt|f32.le|f32.ge|f64.eq|f64.ne|f64.lt|f64.gt|f64.le|f64.ge|i32.wrap/i64|i32.trunc_s/f32|i32.trunc_u/f32|i32.trunc_s/f64|i32.trunc_u/f64|i64.extend_s/i32|i64.extend_u/i32|i64.trunc_s/f32|i64.trunc_u/f32|i64.trunc_s/f64|i64.trunc_u/f64|f32.convert_s/i32|f32.convert_u/i32|f32.convert_s/i64|f32.convert_u/i64|f32.demote/f64|f64.convert_s/i32|f64.convert_u/i32|f64.convert_s/i64|f64.convert_u/i64|f64.promote/f32|i32.reinterpret/f32|i64.reinterpret/f64|f32.reinterpret/i32|f64.reinterpret/i64)(?=[ \\t()]|;;|$)"
+        },
+        {
+          "name": "keyword.control.$1.wat",
+          "match": "(?<=[ \\t()]|^)(unreachable|nop|br_if|br_table|br|return|call|call_indirect|block|loop|if|then|else|end)(?=[ \\t()]|;;|$)"
+        }
+      ]
+    },
+    "invalid": {
+      "patterns": [
+        {
+          "name": "invalid.illegal.character.wat",
+          "match": "."
+        }
+      ]
+    }
+  }
+}
